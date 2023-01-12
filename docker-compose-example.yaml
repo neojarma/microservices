@@ -1,0 +1,106 @@
+version: '3'
+
+services:
+  broker-service:
+    build: ./broker-service
+    restart: always
+    ports:
+      - "8080:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    image: broker-service
+    container_name: broker-service
+  
+  auth-service:
+    build: ./auth-service
+    restart: always
+    ports:
+      - "8081:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      DSN: "host=postgres user=postgres password=password dbname=users port=5432 sslmode=disable TimeZone=UTC connect_timeout=5"
+    image: auth-service
+    container_name: auth-service
+
+  logger-service:
+    build: ./log-service
+    restart: always
+    ports:
+      - "8082:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    image: logger-service
+    container_name: logger-service
+
+  mailer-service:
+    build: ./mail-service
+    restart: always
+    ports:
+      - "8083:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    image: mailer-service
+    container_name: mailer-service
+    environment:
+      SMTP_HOST: YOUR_SMTP_HOST
+      SMTP_PORT: YOUR_SMTP_PORT
+      SMTP_USER: YOUR_SMTP_USER
+      SMTP_PASS: YOUR_SMTP_PASS
+  
+  listener-service:
+    build: ./listener-service
+    restart: always
+    ports:
+      - "8084:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    image: listener-service
+    container_name: listener-service
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+  
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: logs
+    volumes:
+      - ./db-data/mongo/:/data/db
+  
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq/:/var/lib/rabbitmq/

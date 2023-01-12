@@ -1,0 +1,10 @@
+go 1.19
+
+use (
+	./broker-service
+	./front-end
+	./auth-service
+	./log-service
+	./mail-service
+	./listener-service
+)
